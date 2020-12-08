@@ -61,19 +61,38 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
 
     //gather attributes for current mesh
     currentMesh.extractAttributes();
-    QVector<QVector3D>& vertexCoords = currentMesh.getVertexCoords();
-    QVector<QVector3D>& vertexNormals = currentMesh.getVertexNorms();
+
+
     QVector<unsigned int>& polyIndices = currentMesh.getPolyIndices();
 
-    gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
-    gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexCoords.size(), vertexCoords.data(), GL_DYNAMIC_DRAW);
+    if (!settings->limitVertices) {
+        QVector<QVector3D>& vertexCoords = currentMesh.getVertexCoords();
+        gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
+        gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexCoords.size(), vertexCoords.data(), GL_DYNAMIC_DRAW);
+        qDebug() << " → Updated meshCoordsBO";
 
-    qDebug() << " → Updated meshCoordsBO";
+        QVector<QVector3D>& vertexNormals = currentMesh.getVertexNorms();
+        gl->glBindBuffer(GL_ARRAY_BUFFER, meshNormalsBO);
+        gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexNormals.size(), vertexNormals.data(), GL_DYNAMIC_DRAW);
 
-    gl->glBindBuffer(GL_ARRAY_BUFFER, meshNormalsBO);
-    gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexNormals.size(), vertexNormals.data(), GL_DYNAMIC_DRAW);
+        qDebug() << " → Updated meshNormalsBO";
+    } else {
+        QVector<QVector3D>& vertexCoords = currentMesh.getLimitCoords();
+        gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
+        gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexCoords.size(), vertexCoords.data(), GL_DYNAMIC_DRAW);
+        qDebug() << " → Updated meshCoordsBO";
 
-    qDebug() << " → Updated meshNormalsBO";
+        QVector<QVector3D>& vertexNormals = currentMesh.getLimitNorms();
+        gl->glBindBuffer(GL_ARRAY_BUFFER, meshNormalsBO);
+        gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexNormals.size(), vertexNormals.data(), GL_DYNAMIC_DRAW);
+
+        qDebug() << " → Updated meshNormalsBO";
+    }
+
+
+
+
+
 
     gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshIndexBO);
     gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*polyIndices.size(), polyIndices.data(), GL_DYNAMIC_DRAW);

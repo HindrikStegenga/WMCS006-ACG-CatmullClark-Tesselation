@@ -107,7 +107,7 @@ Mesh::Mesh(OBJFile* loadedOBJFile) {
 
 
     qDebug() << "   # Updated HalfEdges" << halfEdges.capacity() << halfEdges.size();
-
+    computeLimitMesh(*this);
 }
 
 Mesh::~Mesh() {
@@ -129,14 +129,22 @@ void Mesh::extractAttributes() {
     HalfEdge* currentEdge;
 
     vertexCoords.clear();
+    limitCoords.clear();
     vertexCoords.reserve(vertices.size());
+    limitCoords.reserve(vertices.size());
 
     for (int k = 0; k < vertices.size(); k++) {
         vertexCoords.append(vertices[k].coords);
     }
 
+    for (int k = 0; k < vertices.size(); ++k) {
+        limitCoords.append(vertices[k].limitCoords);
+    }
+
     vertexNormals.clear();
     vertexNormals.reserve(vertices.size());
+    limitNormals.clear();
+    limitNormals.reserve(vertices.size());
 
     for (int k = 0; k < faces.size(); k++) {
         setFaceNormal(&faces[k]);
@@ -144,6 +152,7 @@ void Mesh::extractAttributes() {
 
     for (int k = 0; k < vertices.size(); k++) {
         vertexNormals.append( computeVertexNormal(&vertices[k]) );
+        limitNormals.append( computeLimitNormal(&vertices[k]) );
     }
 
     polyIndices.clear();
@@ -259,20 +268,25 @@ void Mesh::setTwins(unsigned int numHalfEdges, unsigned int indexH, QVector<QVec
 
 void Mesh::setFaceNormal(Face* currentFace) {
     QVector3D faceNormal;
+    QVector3D faceLimitNormal;
     HalfEdge* currentEdge;
 
     faceNormal = QVector3D();
+    faceLimitNormal = QVector3D();
     currentEdge = currentFace->side;
 
     for(int k = 0; k < currentFace->val; k++) {
         faceNormal += QVector3D::crossProduct(
                     currentEdge->next->target->coords - currentEdge->target->coords,
                     currentEdge->twin->target->coords - currentEdge->target->coords );
+        faceLimitNormal += QVector3D::crossProduct(
+                    currentEdge->next->target->limitCoords - currentEdge->target->limitCoords,
+                    currentEdge->twin->target->limitCoords - currentEdge->target->limitCoords );
         currentEdge = currentEdge->next;
     }
 
     currentFace->normal = faceNormal / faceNormal.length();
-
+    currentFace->limitNormal = faceLimitNormal / faceLimitNormal.length();
 }
 
 QVector3D Mesh::computeVertexNormal(Vertex* currentVertex) {
@@ -291,6 +305,32 @@ QVector3D Mesh::computeVertexNormal(Vertex* currentVertex) {
 
         if (currentEdge->polygon) {
             vertexNormal += faceAngle * currentEdge->polygon->normal;
+        }
+
+        currentEdge = currentEdge->twin->next;
+
+    }
+
+    return vertexNormal;
+
+}
+
+QVector3D Mesh::computeLimitNormal(Vertex* currentVertex) {
+    QVector3D vertexNormal;
+    HalfEdge* currentEdge;
+    float faceAngle;
+
+    vertexNormal = QVector3D();
+    currentEdge = currentVertex->out;
+
+    for (int k = 0; k < currentVertex->val; k++) {
+
+        faceAngle = acos( fmax(-1.0, QVector3D::dotProduct(
+                                   (currentEdge->target->limitCoords - currentVertex->limitCoords).normalized(),
+                                   (currentEdge->prev->twin->target->limitCoords - currentVertex->limitCoords).normalized() ) ) );
+
+        if (currentEdge->polygon) {
+            vertexNormal += faceAngle * currentEdge->polygon->limitNormal;
         }
 
         currentEdge = currentEdge->twin->next;

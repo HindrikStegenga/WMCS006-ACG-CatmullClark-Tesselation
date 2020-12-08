@@ -22,8 +22,10 @@ public:
     inline QVector<HalfEdge>& getHalfEdges() { return halfEdges; }
     inline QVector<Face>& getFaces() { return faces; }
 
+    inline QVector<QVector3D>& getLimitCoords() { return limitCoords; }
     inline QVector<QVector3D>& getVertexCoords() { return vertexCoords; }
     inline QVector<QVector3D>& getVertexNorms() { return vertexNormals; }
+    inline QVector<QVector3D>& getLimitNorms() { return limitNormals; }
     inline QVector<unsigned int>& getPolyIndices() { return polyIndices; }
 
     void setTwins(unsigned int numHalfEdges, unsigned int indexH, QVector<QVector<unsigned int>>& potentialTwins);
@@ -40,13 +42,14 @@ public:
 
     void setFaceNormal(Face* currentFace);
     QVector3D computeVertexNormal(Vertex* currentVertex);
+    QVector3D computeLimitNormal(Vertex* currentVertex);
 
     // For debugging
     void dispVertInfo(unsigned short vertIndex);
     void dispHalfEdgeInfo(unsigned short edgeIndex);
     void dispFaceInfo(unsigned short faceIndex);
 
-
+    void static computeLimitMesh(Mesh& mesh);
     void subdivideCatmullClark(Mesh& mesh);
     void splitHalfEdges(QVector<Vertex>& newVertices, QVector<HalfEdge>& newHalfEdges);
 private:
@@ -55,6 +58,8 @@ private:
     QVector<HalfEdge> halfEdges;
 
     QVector<QVector3D> vertexCoords;
+    QVector<QVector3D> limitCoords;
+    QVector<QVector3D> limitNormals;
     QVector<QVector3D> vertexNormals;
     QVector<unsigned int> polyIndices;
 };

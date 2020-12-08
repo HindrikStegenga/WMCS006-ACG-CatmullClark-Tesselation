@@ -10,6 +10,7 @@ class HalfEdge;
 class Vertex {
 public:
   QVector3D coords;
+  QVector3D limitCoords = QVector3D();
   HalfEdge* out;
   unsigned short val;
   unsigned int index;
@@ -19,6 +20,7 @@ public:
   Vertex() {
     // qDebug() << "Default Vertex Constructor";
     coords = QVector3D();
+    limitCoords = QVector3D();
     out = nullptr;
     val = 0;
     index = 0;

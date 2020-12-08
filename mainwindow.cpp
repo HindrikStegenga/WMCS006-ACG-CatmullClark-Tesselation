@@ -34,5 +34,14 @@ void MainWindow::on_SubdivSteps_valueChanged(int value) {
         meshes[k-1].subdivideCatmullClark(meshes[k]);
     }
 
+    ui->MainDisplay->settings.lastSubdivLevel = value;
     ui->MainDisplay->updateBuffers( meshes[value] );
+    ui->MainDisplay->update();
+}
+
+void MainWindow::on_limitVertices_toggled(bool checked) {
+    ui->MainDisplay->settings.limitVertices = checked;
+    auto value = ui->MainDisplay->settings.lastSubdivLevel;
+    ui->MainDisplay->updateBuffers( meshes[value] );
+    ui->MainDisplay->update();
 }

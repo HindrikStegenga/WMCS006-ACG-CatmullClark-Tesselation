@@ -95,6 +95,19 @@ QGroupBox::title {
         <string>Catmull-Clark steps</string>
        </property>
       </widget>
+      <widget class="QCheckBox" name="limitVertices">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>300</y>
+         <width>181</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Project vertices at limit</string>
+       </property>
+      </widget>
      </widget>
     </item>
     <item>

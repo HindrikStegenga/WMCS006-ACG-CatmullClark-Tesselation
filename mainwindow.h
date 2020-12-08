@@ -23,6 +23,7 @@ public:
 
 private slots:
   void on_ImportOBJ_clicked();
+  void on_limitVertices_toggled(bool checked);
   void on_SubdivSteps_valueChanged(int value);
 
 private:

@@ -13,6 +13,7 @@ public:
   unsigned short val;
   unsigned int index;
   QVector3D normal;
+  QVector3D limitNormal;
 
   // Inline constructors
 
@@ -21,6 +22,7 @@ public:
     val = 0;
     index = 0;
     normal = QVector3D();
+    limitNormal = QVector3D();
   }
 
   Face(HalfEdge* fside, unsigned short fval, unsigned int findex) {
@@ -28,6 +30,7 @@ public:
     val = fval;
     index = findex;
     normal = QVector3D();
+    limitNormal = QVector3D();
   }
 };
 

@@ -10,6 +10,8 @@ public:
 
     bool modelLoaded;
     bool wireframeMode;
+    bool limitVertices;
+    int lastSubdivLevel;
 
     float FoV;
     float dispRatio;
