@@ -108,6 +108,7 @@ Mesh::Mesh(OBJFile* loadedOBJFile) {
 
     qDebug() << "   # Updated HalfEdges" << halfEdges.capacity() << halfEdges.size();
     computeLimitMesh(*this);
+    computeQuadPatches(*this);
 }
 
 Mesh::~Mesh() {
@@ -130,8 +131,14 @@ void Mesh::extractAttributes() {
 
     vertexCoords.clear();
     limitCoords.clear();
+
     vertexCoords.reserve(vertices.size());
     limitCoords.reserve(vertices.size());
+
+    tessCoords.clear();
+    tessCoords.reserve(tessPatches.size() * 16);
+    tessNormals.clear();
+    tessNormals.reserve(tessPatches.size() * 16);
 
     for (int k = 0; k < vertices.size(); k++) {
         vertexCoords.append(vertices[k].coords);
@@ -153,6 +160,13 @@ void Mesh::extractAttributes() {
     for (int k = 0; k < vertices.size(); k++) {
         vertexNormals.append( computeVertexNormal(&vertices[k]) );
         limitNormals.append( computeLimitNormal(&vertices[k]) );
+    }
+
+    for (int k = 0; k < tessPatches.size(); ++k) {
+        for (int c = 0; c < 16; ++c) {
+            tessCoords.push_back(vertexCoords[tessPatches[k].vertIndices[c]]);
+            tessNormals.push_back(vertexNormals[tessPatches[k].vertIndices[c]]);
+        }
     }
 
     polyIndices.clear();
@@ -263,7 +277,6 @@ void Mesh::setTwins(unsigned int numHalfEdges, unsigned int indexH, QVector<QVec
         }
 
     }
-
 }
 
 void Mesh::setFaceNormal(Face* currentFace) {

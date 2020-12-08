@@ -25,6 +25,7 @@ HEADERS  += mainwindow.h \
     mesh.h \
     meshrenderer.h \
     objfile.h \
+    patch.h \
     renderer.h \
     settings.h \
     vertex.h \

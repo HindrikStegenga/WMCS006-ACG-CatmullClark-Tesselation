@@ -22,15 +22,23 @@ public:
     void updateBuffers(Mesh& m);
     void draw();
 
+
+    void regularDraw();
+    void tesselatedDraw();
 private:
 
-    GLuint vao, limitVao;
-    GLuint meshCoordsBO, meshNormalsBO, meshIndexBO, meshLimitCoordsBO, meshLimitNormalsBO;
+    GLuint vao, limitVao, tesselationVao;
+    GLuint meshCoordsBO, meshNormalsBO, meshIndexBO,
+           meshLimitCoordsBO, meshLimitNormalsBO,
+           tessCoordsBO, tessNormalsBO;
     unsigned int meshIBOSize;
+    unsigned int patchCount;
     QOpenGLShaderProgram shaderProg;
+    QOpenGLShaderProgram tessShaderProg;
 
     // Uniforms
     GLint uniModelViewMatrix, uniProjectionMatrix, uniNormalMatrix;
+    GLint uniModelViewMatrixTess, uniProjectionMatrixTess, uniNormalMatrixTess;
 };
 
 #endif // MESHRENDERER_H

@@ -173,6 +173,7 @@ void Mesh::subdivideCatmullClark(Mesh& mesh) {
     qDebug() << "   # HalfEdges:" << newHalfEdges.size();
     qDebug() << "   # Faces:" << newFaces.size();
     computeLimitMesh(mesh);
+    computeQuadPatches(mesh);
 }
 
 
@@ -406,5 +407,71 @@ void Mesh::computeLimitMesh(Mesh &mesh) {
         mesh.vertices[i].limitCoords = vertexLimitPt;
     }
     mesh.extractAttributes();
+}
+
+bool isIrregularFace(Face& face) {
+    if (face.val != 4)
+        return true;
+
+    HalfEdge* currentSide = face.side;
+
+    for(int i = 0; i < face.val; ++i) {
+        if(currentSide->twin->polygon == nullptr ||
+                currentSide->twin->polygon->val != 4 ||
+                currentSide->twin->prev->twin->polygon == nullptr ||
+                currentSide->twin->prev->twin->polygon->val != 4) {
+            //Disqualify face.
+            return true;
+        }
+    }
+    return false;
+}
+
+
+QuadPatch extractQuadPatch(Face& face) {
+    // Get bottom coordinate, putting 1,1 -> 2,1 as face.side. (index 5 -> 6, and 9 -> 10)
+    QuadPatch patch;
+    HalfEdge* startEdge = face.side;
+    HalfEdge* bottomLeft = startEdge->twin->next->twin->prev->twin->next;
+    HalfEdge* firstRow = bottomLeft->prev->twin->prev;
+    HalfEdge* secondRow = firstRow->prev->twin->prev;
+
+    patch.vertIndices = {
+        bottomLeft->target->index,
+        bottomLeft->next->target->index,
+        bottomLeft->next->next->twin->next->target->index,
+        bottomLeft->next->next->twin->next->next->twin->next->target->index,
+
+        firstRow->target->index,
+        firstRow->next->target->index,
+        firstRow->next->next->twin->next->target->index,
+        firstRow->next->next->twin->next->next->twin->next->target->index,
+
+        secondRow->target->index,
+        secondRow->next->target->index,
+        secondRow->next->next->twin->next->target->index,
+        secondRow->next->next->twin->next->next->twin->next->target->index,
+
+        secondRow->prev->target->index,
+        secondRow->prev->prev->twin->prev->target->index,
+        secondRow->prev->prev->twin->prev->prev->twin->prev->target->index,
+        secondRow->prev->prev->twin->prev->prev->twin->prev->twin->target->index,
+    };
+
+    return patch;
+}
+
+void Mesh::computeQuadPatches(Mesh &mesh) {
+
+    mesh.tessPatches.clear();
+    mesh.tessPatches.reserve(mesh.vertices.size() * 16);
+    for(int k = 0; k < mesh.faces.size(); ++k) {
+        auto face = mesh.faces[k];
+        if(isIrregularFace(face))
+            continue;
+
+        // Add to set of quad patches.
+        mesh.tessPatches.push_back(extractQuadPatch(face));
+    }
 }
 

@@ -3,6 +3,7 @@
 
 #include <QVector>
 
+#include "patch.h"
 #include "vertex.h"
 #include "face.h"
 #include "halfedge.h"
@@ -24,6 +25,8 @@ public:
 
     inline QVector<QVector3D>& getLimitCoords() { return limitCoords; }
     inline QVector<QVector3D>& getVertexCoords() { return vertexCoords; }
+    inline QVector<QVector3D>& getTessVertexCoords() { return tessCoords; }
+    inline QVector<QVector3D>& getTessVertexNorms() { return tessNormals; }
     inline QVector<QVector3D>& getVertexNorms() { return vertexNormals; }
     inline QVector<QVector3D>& getLimitNorms() { return limitNormals; }
     inline QVector<unsigned int>& getPolyIndices() { return polyIndices; }
@@ -50,6 +53,9 @@ public:
     void dispFaceInfo(unsigned short faceIndex);
 
     void static computeLimitMesh(Mesh& mesh);
+    void static computeQuadPatches(Mesh& mesh);
+
+    inline int patchCount() { return tessPatches.size(); };
     void subdivideCatmullClark(Mesh& mesh);
     void splitHalfEdges(QVector<Vertex>& newVertices, QVector<HalfEdge>& newHalfEdges);
 private:
@@ -60,8 +66,14 @@ private:
     QVector<QVector3D> vertexCoords;
     QVector<QVector3D> limitCoords;
     QVector<QVector3D> limitNormals;
+
     QVector<QVector3D> vertexNormals;
     QVector<unsigned int> polyIndices;
+
+    QVector<QuadPatch> tessPatches;
+    QVector<QVector3D> tessCoords;
+    QVector<QVector3D> tessNormals;
+
 };
 
 #endif // MESH_H

@@ -14,7 +14,11 @@ public:
     bool limitFilledTriangles;
     bool approxFlatShadeLimitSurface;
     bool approxFlatShadeSurface;
+    bool tesselation;
     int lastSubdivLevel;
+
+
+    int tessLevelInner0, tessLevelInner1, tessLevelOuter0, tessLevelOuter1, tessLevelOuter2, tessLevelOuter3;
 
     float FoV;
     float dispRatio;
