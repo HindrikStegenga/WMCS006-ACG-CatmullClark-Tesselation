@@ -325,12 +325,12 @@ QVector3D computeHalfEdgeMidpoint(HalfEdge* edge) {
     auto target = edge->target;
     auto prevTarget = edge->twin->target;
 
-    return (target->coords + prevTarget->coords) / 2;
+    return (target->coords + prevTarget->coords) / 2.0;
 }
 
 QVector3D computeFaceMidpoint(Face* face) {
     HalfEdge* initialSide = face->side;
-    QVector3D coords = initialSide->target->coords;
+    QVector3D coords = QVector3D();
     HalfEdge* currentSide = initialSide->next;
     coords += currentSide->target->coords;
     while (currentSide != initialSide) {
@@ -362,20 +362,9 @@ QVector<QVector3D> getOutgoingEdgeSumParts(Vertex* vertex) {
     int outgoingEdgeCounter = 0;
     HalfEdge* currentEdge = initialEdge;
     for(;outgoingEdgeCounter < vertex->val; ++outgoingEdgeCounter) {
-        if (currentEdge->polygon == nullptr) {
-            // We are at a boundary
-            QVector3D firstPoint = currentEdge->twin->target->coords;
-            QVector3D secondPoint = currentEdge->target->coords;
-            QVector3D thirdPoint = currentEdge->prev->twin->target->coords;
-
-            QVector3D mi = computeHalfEdgeMidpoint(currentEdge);
-            QVector3D ci = (firstPoint + secondPoint + thirdPoint) / 3.0;
-            sumParts.push_back(mi + ci);
-        } else {
-            QVector3D mi = computeHalfEdgeMidpoint(currentEdge);
-            QVector3D ci = computeFaceMidpoint(currentEdge->polygon);
-            sumParts.push_back(mi + ci);
-        }
+        QVector3D mi = computeHalfEdgeMidpoint(currentEdge);
+        QVector3D ci = computeFaceMidpoint(currentEdge->polygon);
+        sumParts.push_back(mi + ci);
         currentEdge = currentEdge->prev->twin;
     }
     return sumParts;
@@ -384,18 +373,37 @@ QVector<QVector3D> getOutgoingEdgeSumParts(Vertex* vertex) {
 void Mesh::computeLimitMesh(Mesh &mesh) {
     for(int i = 0; i < mesh.vertices.size(); ++i) {
         Vertex& sourceVertex = mesh.vertices[i];
+        QVector3D vertexLimitPt = QVector3D();
 
-        auto sumParts = getOutgoingEdgeSumParts(&sourceVertex);
-        float firstPart = (sourceVertex.val - 3.0) / (sourceVertex.val + 5.0);
-        float secondPart = (4.0 / (sourceVertex.val * (sourceVertex.val + 5.0)));
+        // Check for boundary vertex.
+        if (HalfEdge* boundaryEdge = vertOnBoundary(&sourceVertex)) {
+            if (boundaryEdge->twin->target->val == 2) {
+                // Interpolate corners
+                vertexLimitPt = boundaryEdge->twin->target->coords;
+            } else {
+                // Apply 1 4 1 limit mask.
+                vertexLimitPt  = 1.0 * boundaryEdge->target->coords;
+                vertexLimitPt += 4.0 * boundaryEdge->twin->target->coords;
+                vertexLimitPt += 1.0 * boundaryEdge->prev->twin->target->coords;
+                vertexLimitPt /= 6.0;
+            }
+        } else {
+            // Apply equation from the paper to compute p0.
+            auto sumParts = getOutgoingEdgeSumParts(&sourceVertex);
+            float n = sourceVertex.val;
 
-        QVector3D p0 = firstPart * sourceVertex.coords;
-        QVector3D sumResult = QVector3D();
-        for(auto& k : sumParts) {
-            sumResult += k;
+            float firstPart = (n - 3.0) / (n + 5.0);
+            float secondPart = (4.0 / (n * (n + 5.0)));
+
+            QVector3D p0 = firstPart * sourceVertex.coords;
+            QVector3D sumResult = QVector3D();
+            for(auto& k : sumParts) {
+                sumResult += k;
+            }
+            p0 +=  secondPart * sumResult;
+            vertexLimitPt = p0;
         }
-        p0 +=  secondPart * sumResult;
-        mesh.vertices[i].limitCoords = p0;
+        mesh.vertices[i].limitCoords = vertexLimitPt;
     }
     mesh.extractAttributes();
 }
