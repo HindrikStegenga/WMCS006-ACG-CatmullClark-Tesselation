@@ -333,13 +333,11 @@ QVector3D computeFaceMidpoint(Face* face) {
     QVector3D coords = initialSide->target->coords;
     HalfEdge* currentSide = initialSide->next;
     coords += currentSide->target->coords;
-    int counter = 2;
     while (currentSide != initialSide) {
         currentSide = currentSide->next;
         coords += currentSide->target->coords;
-        counter += 1;
     }
-    return coords / counter;
+    return coords / face->val;
 }
 
 // Computes wether the vertex is on a boundary or not.

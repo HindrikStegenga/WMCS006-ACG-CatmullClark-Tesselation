@@ -4,6 +4,8 @@
 layout (location = 0) in vec3 vertcoords_camera_fs;
 layout (location = 1) in vec3 vertnormal_camera_fs;
 
+uniform vec3 materialColour;
+
 out vec4 fColor;
 
 void main() {
@@ -11,7 +13,7 @@ void main() {
   vec3 lightpos = vec3(3.0, 0.0, 2.0);
   vec3 lightcolour = vec3(1.0);
 
-  vec3 matcolour = vec3(0.53, 0.80, 0.87);
+  vec3 matcolour = materialColour;
   vec3 matspeccolour = vec3(1.0);
 
   float matambientcoeff = 0.2;

@@ -24,8 +24,8 @@ public:
 
 private:
 
-    GLuint vao;
-    GLuint meshCoordsBO, meshNormalsBO, meshIndexBO;
+    GLuint vao, limitVao;
+    GLuint meshCoordsBO, meshNormalsBO, meshIndexBO, meshLimitCoordsBO, meshLimitNormalsBO;
     unsigned int meshIBOSize;
     QOpenGLShaderProgram shaderProg;
 

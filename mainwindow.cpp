@@ -45,3 +45,10 @@ void MainWindow::on_limitVertices_toggled(bool checked) {
     ui->MainDisplay->updateBuffers( meshes[value] );
     ui->MainDisplay->update();
 }
+
+void MainWindow::on_fillLimitSurface_toggled(bool checked) {
+    ui->MainDisplay->settings.limitFilledTriangles = checked;
+    auto value = ui->MainDisplay->settings.lastSubdivLevel;
+    ui->MainDisplay->updateBuffers( meshes[value] );
+    ui->MainDisplay->update();
+}

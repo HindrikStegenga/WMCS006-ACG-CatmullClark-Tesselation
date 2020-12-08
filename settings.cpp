@@ -5,6 +5,7 @@ Settings::Settings()
     limitVertices = false;
     modelLoaded = false;
     wireframeMode = true;
+    limitFilledTriangles = false;
     uniformUpdateRequired = true;
     lastSubdivLevel = 0;
 

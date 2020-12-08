@@ -11,6 +11,7 @@ public:
     bool modelLoaded;
     bool wireframeMode;
     bool limitVertices;
+    bool limitFilledTriangles;
     int lastSubdivLevel;
 
     float FoV;
