@@ -5,6 +5,8 @@ Settings::Settings()
     limitVertices = false;
     modelLoaded = false;
     wireframeMode = true;
+    approxFlatShadeLimitSurface = false;
+    approxFlatShadeSurface = false;
     limitFilledTriangles = false;
     uniformUpdateRequired = true;
     lastSubdivLevel = 0;

@@ -12,6 +12,8 @@ public:
     bool wireframeMode;
     bool limitVertices;
     bool limitFilledTriangles;
+    bool approxFlatShadeLimitSurface;
+    bool approxFlatShadeSurface;
     int lastSubdivLevel;
 
     float FoV;

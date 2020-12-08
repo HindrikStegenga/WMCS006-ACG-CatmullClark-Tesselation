@@ -121,6 +121,32 @@ QGroupBox::title {
         <string>Fill limit surface triangles</string>
        </property>
       </widget>
+      <widget class="QCheckBox" name="approxShadeSurface">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>160</y>
+         <width>181</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Approx flat shade surface</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="approxShadeLimitSurface">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>360</y>
+         <width>191</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Approx flat shade limit surf</string>
+       </property>
+      </widget>
      </widget>
     </item>
     <item>

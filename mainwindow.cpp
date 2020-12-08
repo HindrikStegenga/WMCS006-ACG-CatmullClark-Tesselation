@@ -26,6 +26,16 @@ void MainWindow::on_ImportOBJ_clicked() {
   ui->SubdivSteps->setEnabled(true);
 }
 
+void MainWindow::on_approxShadeSurface_toggled(bool checked) {
+    ui->MainDisplay->settings.approxFlatShadeSurface = checked;
+    ui->MainDisplay->update();
+}
+
+void MainWindow::on_approxShadeLimitSurface_toggled(bool checked) {
+    ui->MainDisplay->settings.approxFlatShadeLimitSurface = checked;
+    ui->MainDisplay->update();
+}
+
 void MainWindow::on_SubdivSteps_valueChanged(int value) {
     unsigned short k;
 

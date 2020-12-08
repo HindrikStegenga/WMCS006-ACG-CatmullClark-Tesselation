@@ -144,12 +144,14 @@ void MeshRenderer::draw() {
     if(settings->limitVertices) {
         // Draw limit surface.
         shaderProg.setUniformValue("materialColour", 0.5, 0.5, 0.5);
+        shaderProg.setUniformValue("approxFlatShading", settings->approxFlatShadeLimitSurface);
         if(settings->limitFilledTriangles) {
             gl->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
             gl->glBindVertexArray(limitVao);
             gl->glDrawElements(GL_TRIANGLE_FAN, meshIBOSize, GL_UNSIGNED_INT, 0);
             gl->glBindVertexArray(0);
         } else {
+            shaderProg.setUniformValue("approxFlatShading", false);
             gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
             gl->glBindVertexArray(limitVao);
             gl->glDrawElements(GL_LINE_LOOP, meshIBOSize, GL_UNSIGNED_INT, 0);
@@ -158,6 +160,7 @@ void MeshRenderer::draw() {
 
         // Draw regular variant
         shaderProg.setUniformValue("materialColour", 0.0, 0.0, 1.0);
+        shaderProg.setUniformValue("approxFlatShading", false);
         gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
         gl->glBindVertexArray(vao);
         gl->glDrawElements(GL_LINE_LOOP, meshIBOSize, GL_UNSIGNED_INT, 0);
@@ -167,9 +170,11 @@ void MeshRenderer::draw() {
         gl->glBindVertexArray(vao);
 
         if (settings->wireframeMode) {
+            shaderProg.setUniformValue("approxFlatShading", false);
             gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
             gl->glDrawElements(GL_LINE_LOOP, meshIBOSize, GL_UNSIGNED_INT, 0);
         } else {
+            shaderProg.setUniformValue("approxFlatShading", settings->approxFlatShadeSurface);
             gl->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
             gl->glDrawElements(GL_TRIANGLE_FAN, meshIBOSize, GL_UNSIGNED_INT, 0);
         }
