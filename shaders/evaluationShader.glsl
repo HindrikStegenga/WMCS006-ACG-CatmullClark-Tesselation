@@ -31,6 +31,24 @@ void main() {
     vec4 p23 = gl_in[14].gl_Position;
     vec4 p33 = gl_in[15].gl_Position;
 
+    vec3 pc00 = tess_vertcoords_camera_fs[ 0];
+    vec3 pc10 = tess_vertcoords_camera_fs[ 1];
+    vec3 pc20 = tess_vertcoords_camera_fs[ 2];
+    vec3 pc30 = tess_vertcoords_camera_fs[ 3];
+    vec3 pc01 = tess_vertcoords_camera_fs[ 4];
+    vec3 pc11 = tess_vertcoords_camera_fs[ 5];
+    vec3 pc21 = tess_vertcoords_camera_fs[ 6];
+    vec3 pc31 = tess_vertcoords_camera_fs[ 7];
+    vec3 pc02 = tess_vertcoords_camera_fs[ 8];
+    vec3 pc12 = tess_vertcoords_camera_fs[ 9];
+    vec3 pc22 = tess_vertcoords_camera_fs[10];
+    vec3 pc32 = tess_vertcoords_camera_fs[11];
+    vec3 pc03 = tess_vertcoords_camera_fs[12];
+    vec3 pc13 = tess_vertcoords_camera_fs[13];
+    vec3 pc23 = tess_vertcoords_camera_fs[14];
+    vec3 pc33 = tess_vertcoords_camera_fs[15];
+
+
     float u = gl_TessCoord.x;
     float v = gl_TessCoord.y;
 
@@ -57,8 +75,9 @@ void main() {
             + bu2 * ( bv0*p20 + bv1*p21 + bv2*p22 + bv3*p23 )
             + bu3 * ( bv0*p30 + bv1*p31 + bv2*p32 + bv3*p33 );
 
+    vertcoords_camera_fs = vec3(modelviewmatrix * gl_Position);
     gl_Position = projectionmatrix * modelviewmatrix * gl_Position;
 
-    vertcoords_camera_fs = tess_vertcoords_camera_fs[0];
+
     vertnormal_camera_fs = tess_vertnormal_camera_fs[0];
 }

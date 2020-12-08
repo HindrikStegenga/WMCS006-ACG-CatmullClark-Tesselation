@@ -136,11 +136,12 @@ void Mesh::extractAttributes() {
     limitCoords.reserve(vertices.size());
 
     tessCoords.clear();
-    tessCoords.reserve(tessPatches.size() * 16);
+    tessCoords.reserve(tessPatches.size());
     tessNormals.clear();
-    tessNormals.reserve(tessPatches.size() * 16);
+    tessNormals.reserve(tessPatches.size());
 
     for (int k = 0; k < vertices.size(); k++) {
+        tessCoords.append(vertices[k].coords);
         vertexCoords.append(vertices[k].coords);
     }
 
@@ -158,14 +159,18 @@ void Mesh::extractAttributes() {
     }
 
     for (int k = 0; k < vertices.size(); k++) {
+        tessNormals.append(computeVertexNormal(&vertices[k]));
         vertexNormals.append( computeVertexNormal(&vertices[k]) );
         limitNormals.append( computeLimitNormal(&vertices[k]) );
     }
 
+
+    tessIndices.clear();
+    tessIndices.reserve(16 * tessPatches.size());
+
     for (int k = 0; k < tessPatches.size(); ++k) {
         for (int c = 0; c < 16; ++c) {
-            tessCoords.push_back(vertexCoords[tessPatches[k].vertIndices[c]]);
-            tessNormals.push_back(vertexNormals[tessPatches[k].vertIndices[c]]);
+            tessIndices.push_back(tessPatches[k].vertIndices[c]);
         }
     }
 

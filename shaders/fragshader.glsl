@@ -11,8 +11,6 @@ out vec4 fColor;
 
 void main() {
 
-  fColor = vec4(1);
-  return;
   vec3 lightpos = vec3(3.0, 0.0, 2.0);
   vec3 lightcolour = vec3(1.0);
 

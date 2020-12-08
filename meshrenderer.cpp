@@ -108,6 +108,9 @@ void MeshRenderer::initBuffers() {
     gl->glEnableVertexAttribArray(1);
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+    gl->glGenBuffers(1, &tessIndexBO);
+    gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tessIndexBO);
+
     gl->glBindVertexArray(0);
 
 }
@@ -139,8 +142,6 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
     //gather attributes for current mesh
     currentMesh.extractAttributes();
 
-
-
     QVector<QVector3D>& vertexCoords = currentMesh.getVertexCoords();
     QVector<QVector3D>& vertexNormals = currentMesh.getVertexNorms();
     QVector<unsigned int>& polyIndices = currentMesh.getPolyIndices();
@@ -152,7 +153,7 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
 
     QVector<QVector3D>& tessVertCoords = test; //currentMesh.getTessVertexCoords();
     QVector<QVector3D>& tessVertNorms = test2; //currentMesh.getTessVertexNorms();
-
+    //QVector<unsigned int>& tessPatchIndices = currentMesh.getTessIndices();
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
     gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexCoords.size(), vertexCoords.data(), GL_DYNAMIC_DRAW);
@@ -189,9 +190,12 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
     gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshIndexBO);
     gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*polyIndices.size(), polyIndices.data(), GL_DYNAMIC_DRAW);
 
+    //gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tessIndexBO);
+    //gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*tessPatchIndices.size(), tessPatchIndices.data(), GL_DYNAMIC_DRAW);
+
     qDebug() << " → Updated meshIndexBO";
 
-    patchCount = currentMesh.patchCount();
+    patchCount = tessVertCoords.size();
     meshIBOSize = polyIndices.size();
 }
 
@@ -288,8 +292,8 @@ void MeshRenderer::tesselatedDraw() {
     QOpenGLShaderProgram& shaderProgram = tessShaderProg;
 
     shaderProgram.bind();
-    shaderProgram.setUniformValue("materialColour", 1.0, 0.0, 0.0);
-    shaderProgram.setUniformValue("approxFlatShading", false);
+    shaderProgram.setUniformValue("materialColour", 0.5, 0.5, 0.5);
+    shaderProgram.setUniformValue("approxFlatShading", true);
 
     tessShaderProg.setUniformValue("tessInner0", settings->tessLevelInner0);
     tessShaderProg.setUniformValue("tessInner1", settings->tessLevelInner1);
@@ -299,11 +303,16 @@ void MeshRenderer::tesselatedDraw() {
     tessShaderProg.setUniformValue("tessOuter3", settings->tessLevelOuter3);
 
     gl->glBindVertexArray(tesselationVao);
-    std::cout << glGetError() << std::endl;
-    gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
-    std::cout << glGetError() << std::endl;
-    gl->glPatchParameteri(GL_PATCH_VERTICES, 16);
-    std::cout << glGetError() << std::endl;
+    if (settings->wireframeMode) {
+        shaderProgram.setUniformValue("approxFlatShading", false);
+        gl->glPolygonMode( GL_FRONT, GL_LINE);
+    } else {
+        shaderProgram.setUniformValue("approxFlatShading", settings->approxFlatShadeSurface);
+        gl->glPolygonMode( GL_FRONT, GL_FILL);
+    }
+
+    //gl->glPatchParameteri(GL_PATCH_VERTICES, 16);
+    //gl->glDrawElements(GL_PATCHES, patchCount, GL_UNSIGNED_INT, 0);
     gl->glDrawArrays(GL_PATCHES, 0, 16);
     std::cout << glGetError() << std::endl;
 
