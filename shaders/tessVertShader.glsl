@@ -14,6 +14,6 @@ layout (location = 1) out vec3 vertnormal_camera_fs;
 void main() {
   gl_Position = vec4(vertcoords_world_vs, 1.0);
 
-  vertcoords_camera_fs = vec3(modelviewmatrix * vec4(vertcoords_world_vs, 1.0));
-  vertnormal_camera_fs = normalize(normalmatrix * vertnormal_world_vs);
+  vertcoords_camera_fs = vertcoords_world_vs;
+  vertnormal_camera_fs = vertnormal_world_vs;
 }

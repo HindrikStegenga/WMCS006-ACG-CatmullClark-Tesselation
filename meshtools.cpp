@@ -409,6 +409,24 @@ void Mesh::computeLimitMesh(Mesh &mesh) {
     mesh.extractAttributes();
 }
 
+HalfEdge* findBottomFaceSide(Face& face) {
+    unsigned int edgeIdx = UINT_MAX;
+    HalfEdge* bottom = face.side;
+
+    HalfEdge* currentSide = face.side;
+
+    do {
+        if (currentSide->index < edgeIdx) {
+            bottom = currentSide;
+            edgeIdx = currentSide->index;
+        }
+
+        currentSide = currentSide->next;
+    } while (face.side != currentSide);
+
+    return bottom;
+}
+
 QuadPatch extractQuadPatch(Face& face) {
     // Get bottom coordinate, putting 1,1 -> 2,1 as face.side. (index 5 -> 6, and 9 -> 10)
     QuadPatch patch;
@@ -422,10 +440,12 @@ QuadPatch extractQuadPatch(Face& face) {
     //  |     |     |     |
     // p0  -  p1 -  p2 - p3
 
-    auto p5p6 = face.side;
-    auto p6p10 = face.side->next;
-    auto p10p9 = face.side->next->next;
-    auto p9p5 = face.side->prev;
+    HalfEdge* bottomFace = findBottomFaceSide(face);
+
+    auto p5p6 = bottomFace;
+    auto p6p10 = bottomFace->next;
+    auto p10p9 = bottomFace->next->next;
+    auto p9p5 = bottomFace->prev;
 
     // Bottom middle edge points
     auto p1 = p5p6->twin->next->target->index;
@@ -452,16 +472,16 @@ QuadPatch extractQuadPatch(Face& face) {
     auto p15 = p6p10->twin->prev->twin->next->target->index;
 
     // Bottom left vertex of face
-    auto p5 = face.side->twin->target->index;
+    auto p5 = bottomFace->twin->target->index;
 
     // Bottom right vertex of face
-    auto p6 = face.side->target->index;
+    auto p6 = bottomFace->target->index;
 
     // Top left vertex of face
-    auto p9 = face.side->prev->twin->target->index;
+    auto p9 = bottomFace->prev->twin->target->index;
 
     // Top right vertex of face
-    auto p10 = face.side->next->target->index;
+    auto p10 = bottomFace->next->target->index;
 
     patch.vertIndices = {
         p0, p1, p2, p3,

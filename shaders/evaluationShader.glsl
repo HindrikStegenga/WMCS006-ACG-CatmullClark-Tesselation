@@ -99,9 +99,12 @@ void main() {
                          + b2(u) * ( b0(v) * pc20 + b1(v) * pc21 + b2(v) * pc22 + b3(v) * pc23 )
                          + b3(u) * ( b0(v) * pc30 + b1(v) * pc31 + b2(v) * pc32 + b3(v) * pc33 );
 
+    vertcoords_camera_fs = vec3(modelviewmatrix * vec4(vertcoords_camera_fs, 1.0));
+
     vertnormal_camera_fs = b0(u) * ( b0(v) * pn00 + b1(v) * pn01 + b2(v) * pn02 + b3(v) * pn03 )
                               + b1(u) * ( b0(v) * pn10 + b1(v) * pn11 + b2(v) * pn12 + b3(v) * pn13 )
                               + b2(u) * ( b0(v) * pn20 + b1(v) * pn21 + b2(v) * pn22 + b3(v) * pn23 )
                               + b3(u) * ( b0(v) * pn30 + b1(v) * pn31 + b2(v) * pn32 + b3(v) * pn33 );
 
+    vertnormal_camera_fs = normalize(normalmatrix * vertnormal_camera_fs);
 }
