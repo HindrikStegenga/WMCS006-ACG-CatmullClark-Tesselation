@@ -97,12 +97,12 @@ void MeshRenderer::initBuffers() {
     gl->glGenVertexArrays(1, &tesselationVao);
     gl->glBindVertexArray(tesselationVao);
 
-    // We can reuse buffers from limit meshes for tesselation.
-    gl->glBindBuffer(GL_ARRAY_BUFFER, meshLimitCoordsBO);
+    // We can reuse buffers for tesselation.
+    gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
     gl->glEnableVertexAttribArray(0);
     gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    gl->glBindBuffer(GL_ARRAY_BUFFER, meshLimitNormalsBO);
+    gl->glBindBuffer(GL_ARRAY_BUFFER, meshNormalsBO);
     gl->glEnableVertexAttribArray(1);
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -223,11 +223,6 @@ void MeshRenderer::regularDraw() {
     gl->glPrimitiveRestartIndex(INT_MAX);
 
     shaderProg.setUniformValue("materialColour", 0.53, 0.80, 0.87);
-
-
-    GLint MaxPatchVertices = 0;
-    glGetIntegerv(GL_MAX_PATCH_VERTICES, &MaxPatchVertices);
-    printf("Max supported patch vertices %d\n", MaxPatchVertices);
 
     if(settings->limitVertices) {
         // Draw limit surface.

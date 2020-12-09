@@ -4,9 +4,6 @@ layout(vertices = 16) out;
 in vec3 vertcoords_camera_fs[];
 in vec3 vertnormal_camera_fs[];
 
-//patch out float gl_TessLevelOuter[4];
-//patch out float gl_TessLevelInner[2];
-
 uniform int tessInner0;
 uniform int tessInner1;
 uniform int tessOuter0;

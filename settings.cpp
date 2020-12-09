@@ -2,8 +2,8 @@
 
 Settings::Settings()
 {
-    tessLevelInner0 = 1;
-    tessLevelInner1 = 1;
+    tessLevelInner0 = 0;
+    tessLevelInner1 = 0;
 
     tessLevelOuter0 = 1;
     tessLevelOuter1 = 1;

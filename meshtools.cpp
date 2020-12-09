@@ -263,7 +263,7 @@ void Mesh::splitHalfEdges(QVector<Vertex>& newVertices, QVector<HalfEdge>& newHa
 
     vIndex = vertices.size() + faces.size();
 
-    for (k = 0; k < halfEdges.size(); k++) {
+    for (k = 0; k < static_cast<unsigned int>(halfEdges.size()); k++) {
         currentEdge = &halfEdges[k];
         m = currentEdge->twin->index;
 
@@ -409,24 +409,19 @@ void Mesh::computeLimitMesh(Mesh &mesh) {
     mesh.extractAttributes();
 }
 
-bool isIrregularFace(Face& face) {
-    if (face.val != 4)
+bool hasIrregularVertices(Face& face) {
+    if (face.val != 4) {
         return true;
-
+    }
     HalfEdge* currentSide = face.side;
-
-    for(int i = 0; i < face.val; ++i) {
-        if(currentSide->twin->polygon == nullptr ||
-                currentSide->twin->polygon->val != 4 ||
-                currentSide->twin->prev->twin->polygon == nullptr ||
-                currentSide->twin->prev->twin->polygon->val != 4) {
-            //Disqualify face.
+    while(currentSide->next != face.side) {
+        if (currentSide->target->val != 4) {
             return true;
         }
+        currentSide = currentSide->next;
     }
     return false;
 }
-
 
 QuadPatch extractQuadPatch(Face& face) {
     // Get bottom coordinate, putting 1,1 -> 2,1 as face.side. (index 5 -> 6, and 9 -> 10)
@@ -446,23 +441,29 @@ QuadPatch extractQuadPatch(Face& face) {
     auto p10p9 = face.side->next->next;
     auto p9p5 = face.side->prev;
 
+    // Bottom middle edge points
     auto p1 = p5p6->twin->next->target->index;
     auto p2 = p5p6->twin->prev->twin->target->index;
 
-    auto p13 = p10p9->twin->prev->twin->target->index;
+    // Top middle edge points
     auto p14 = p10p9->twin->next->target->index;
+    auto p13 = p10p9->twin->prev->twin->target->index;
 
-    auto p11 = p6p10->twin->prev->twin->target->index;
+    // Right middle edge points
     auto p7  = p6p10->twin->next->target->index;
+    auto p11 = p6p10->twin->prev->twin->target->index;
 
+    // Left middle edge points
     auto p8  = p9p5->twin->next->target->index;
     auto p4  = p9p5->twin->prev->twin->target->index;
 
-    auto p0 = p5p6->twin->next->twin->prev->prev->target->index;
+    // Corner points
+    auto p0 = p9p5->twin->prev->twin->next->target->index;
+    //auto p0 = p9p5->twin->prev->twin->next->target->index;
     auto p3 = p5p6->twin->prev->twin->next->target->index;
 
     auto p12 = p10p9->twin->prev->twin->next->target->index;
-    auto p15 = p10p9->twin->next->prev->prev->target->index;
+    auto p15 = p6p10->twin->prev->twin->next->target->index;
 
     // Bottom left vertex of face
     auto p5 = face.side->twin->target->index;
@@ -487,14 +488,51 @@ QuadPatch extractQuadPatch(Face& face) {
     return patch;
 }
 
+bool isIrregularFace(Face& face, Mesh &mesh) {
+    if (hasIrregularVertices(face)) {
+        return true;
+    }
+
+    HalfEdge* currentSide = face.side;
+
+    while (currentSide->next != face.side) {
+        if (currentSide->twin->polygon == nullptr ||
+                hasIrregularVertices(*currentSide->twin->polygon)) {
+            return true;
+        }
+        currentSide = currentSide->next;
+    }
+
+    QuadPatch testPatch = extractQuadPatch(face);
+    for (size_t i = 0; i < testPatch.vertIndices.size(); ++i) {
+
+//        if (mesh.getVertices()[testPatch.vertIndices[i]].val != 4) {
+//            return true;
+//        }
+
+        for(size_t j = 0; j < testPatch.vertIndices.size(); ++j) {
+            if (i == j)
+                continue;
+            // All vertices must be unique!
+            if (testPatch.vertIndices[i] == testPatch.vertIndices[j])
+                return true;
+        }
+    }
+
+    return false;
+}
+
+
+
+
 void Mesh::computeQuadPatches(Mesh &mesh) {
 
     mesh.tessPatches.clear();
     mesh.tessPatches.reserve(mesh.faces.size());
     for(int k = 0; k < mesh.faces.size(); ++k) {
         auto face = mesh.faces[k];
-        //if(isIrregularFace(face))
-            //continue;
+        if(isIrregularFace(face, mesh))
+            continue;
 
         // Add to set of quad patches.
         mesh.tessPatches.push_back(extractQuadPatch(face));

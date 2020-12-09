@@ -15,19 +15,27 @@ out vec3 vertnormal_camera_fs;
 
 // Basis functions for B-Spline surface.
 float b0(float t) {
-    return ((1.0 - t) * (1.0 - t) * (1.0 - t)) / 6.0;
+    //return (1 - t) * (1 - t) * (1 - t); //Bezier
+
+    return ((1.0 - t) * (1.0 - t) * (1.0 - t)) / 6.0; //B-Spline
 }
 
 float b1(float t) {
-    return (4.0 - 6.0 * t * t + 3.0 * t * t * t) / 6.0;
+    //return 3 * (1-t) * (1-t) * t; //Bezier
+
+    return (4.0 - (6.0 * t * t) + (3.0 * t * t * t)) / 6.0; //B-Spline
 }
 
 float b2(float t) {
-    return (1.0 + 3.0 * t + 3 * t * t - 3.0 * t * t * t) / 6.0;
+    //return 3 * (1-t) * t * t; //Bezier
+
+    return (1.0 + (3.0 * t) + (3.0 * t * t) - (3.0 * t * t * t)) / 6.0; //B-Spline
 }
 
 float b3(float t) {
-    return (t * t * t) / 6.0;
+    //return t * t * t; //Bezier
+
+    return (t * t * t) / 6.0; //B-Spline
 }
 
 void main() {
@@ -52,10 +60,17 @@ void main() {
     float u = gl_TessCoord.x;
     float v = gl_TessCoord.y;
 
-    gl_Position = b0(u) * ( b0(v) * p00 + b1(v) * p01 + b2(v) * p02 + b3(v) * p03 )
-                + b1(u) * ( b0(v) * p10 + b1(v) * p11 + b2(v) * p12 + b3(v) * p13 )
-                + b2(u) * ( b0(v) * p20 + b1(v) * p21 + b2(v) * p22 + b3(v) * p23 )
-                + b3(u) * ( b0(v) * p30 + b1(v) * p31 + b2(v) * p32 + b3(v) * p33 );
+
+    vec4 p1 = mix(gl_in[6].gl_Position,gl_in[5].gl_Position,gl_TessCoord.x);
+    vec4 p2 = mix(gl_in[10].gl_Position,gl_in[9].gl_Position,gl_TessCoord.x);
+    gl_Position = mix(p1, p2, gl_TessCoord.y);
+
+
+
+//    gl_Position = b0(u) * ( b0(v) * p00 + b1(v) * p01 + b2(v) * p02 + b3(v) * p03 )
+//                + b1(u) * ( b0(v) * p10 + b1(v) * p11 + b2(v) * p12 + b3(v) * p13 )
+//                + b2(u) * ( b0(v) * p20 + b1(v) * p21 + b2(v) * p22 + b3(v) * p23 )
+//                + b3(u) * ( b0(v) * p30 + b1(v) * p31 + b2(v) * p32 + b3(v) * p33 );
 
     gl_Position = projectionmatrix * modelviewmatrix * gl_Position;
 
