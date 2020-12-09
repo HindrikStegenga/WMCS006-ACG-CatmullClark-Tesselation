@@ -30,7 +30,6 @@ public:
     inline QVector<QVector3D>& getVertexNorms() { return vertexNormals; }
     inline QVector<QVector3D>& getLimitNorms() { return limitNormals; }
     inline QVector<unsigned int>& getPolyIndices() { return polyIndices; }
-    inline QVector<unsigned int>& getTessIndices() { return tessIndices; }
 
     void setTwins(unsigned int numHalfEdges, unsigned int indexH, QVector<QVector<unsigned int>>& potentialTwins);
 
@@ -74,7 +73,6 @@ private:
     QVector<QuadPatch> tessPatches;
     QVector<QVector3D> tessCoords;
     QVector<QVector3D> tessNormals;
-    QVector<unsigned int> tessIndices;
 
 };
 

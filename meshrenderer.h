@@ -30,7 +30,7 @@ private:
     GLuint vao, limitVao, tesselationVao;
     GLuint meshCoordsBO, meshNormalsBO, meshIndexBO,
            meshLimitCoordsBO, meshLimitNormalsBO,
-           tessCoordsBO, tessNormalsBO, tessIndexBO;
+           tessCoordsBO, tessNormalsBO;
     unsigned int meshIBOSize;
     unsigned int patchCount;
     QOpenGLShaderProgram shaderProg;
