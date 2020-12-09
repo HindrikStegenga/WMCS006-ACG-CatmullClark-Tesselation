@@ -9,14 +9,11 @@ public:
     Settings();
 
     bool modelLoaded;
+    int renderingMode;
     bool wireframeMode;
-    bool limitVertices;
-    bool limitFilledTriangles;
-    bool approxFlatShadeLimitSurface;
-    bool approxFlatShadeSurface;
-    bool tesselation;
+    bool approxFlatShading;
     int lastSubdivLevel;
-
+    bool showNonTesselatedWireframe;
 
     int tessLevelInner0, tessLevelInner1, tessLevelOuter0, tessLevelOuter1, tessLevelOuter2, tessLevelOuter3;
 

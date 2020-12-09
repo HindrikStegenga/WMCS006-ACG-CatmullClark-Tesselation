@@ -9,7 +9,8 @@ MeshRenderer::MeshRenderer()
 MeshRenderer::~MeshRenderer() {
     gl->glDeleteVertexArrays(1, &vao);
     gl->glDeleteVertexArrays(1, &limitVao);
-    gl->glDeleteVertexArrays(1, &tesselationVao);
+    gl->glDeleteVertexArrays(1, &tesselationRegularVao);
+    gl->glDeleteVertexArrays(1, &tesselationLimitVao);
 
     gl->glDeleteBuffers(1, &meshLimitCoordsBO);
     gl->glDeleteBuffers(1, &meshLimitNormalsBO);
@@ -93,9 +94,9 @@ void MeshRenderer::initBuffers() {
 
     gl->glBindVertexArray(0);
 
-    // Tesselated drawing
-    gl->glGenVertexArrays(1, &tesselationVao);
-    gl->glBindVertexArray(tesselationVao);
+    // Tesselated drawing (non limit surface)
+    gl->glGenVertexArrays(1, &tesselationRegularVao);
+    gl->glBindVertexArray(tesselationRegularVao);
 
     // We can reuse buffers for tesselation.
     gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
@@ -112,26 +113,24 @@ void MeshRenderer::initBuffers() {
 
     gl->glBindVertexArray(0);
 
-}
 
-QVector<QVector3D> createPlanarMesh(bool normals) {
-    QVector<QVector3D> points;
+    // Tesselated drawing (limit surface)
+    gl->glGenVertexArrays(1, &tesselationLimitVao);
+    gl->glBindVertexArray(tesselationLimitVao);
 
-    for(int i = 0; i < 4; ++i) {
-        for(int j = 0; j < 4; ++j){
-            if(normals)
-                points.push_back(QVector3D(0.0, 1.0, 0.0));
-            else
-            points.push_back(QVector3D(-1.5 + i, -1.5 + j, 0.0));
-        }
-    }
+    // We can reuse buffers for tesselation.
+    gl->glBindBuffer(GL_ARRAY_BUFFER, meshLimitCoordsBO);
+    gl->glEnableVertexAttribArray(0);
+    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    points[5].setZ(2.25);
-    points[6].setZ(2.25);
-    points[9].setZ(2.25);
-    points[10].setZ(2.25);
+    gl->glBindBuffer(GL_ARRAY_BUFFER, meshLimitNormalsBO);
+    gl->glEnableVertexAttribArray(1);
+    gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    return points;
+    gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tessIndexBO);
+
+    gl->glBindVertexArray(0);
+
 }
 
 void MeshRenderer::updateBuffers(Mesh& currentMesh) {
@@ -140,8 +139,6 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
 
     //gather attributes for current mesh
     currentMesh.extractAttributes();
-
-
 
     QVector<QVector3D>& vertexCoords = currentMesh.getVertexCoords();
     QVector<QVector3D>& vertexNormals = currentMesh.getVertexNorms();
@@ -155,20 +152,18 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
     gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexCoords.size(), vertexCoords.data(), GL_DYNAMIC_DRAW);
-    qDebug() << " → Updated meshCoordsBO";
 
+    qDebug() << " → Updated meshCoordsBO";
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, meshNormalsBO);
     gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexNormals.size(), vertexNormals.data(), GL_DYNAMIC_DRAW);
 
     qDebug() << " → Updated meshNormalsBO";
 
-
-
     gl->glBindBuffer(GL_ARRAY_BUFFER, meshLimitCoordsBO);
     gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexLimitCoords.size(), vertexLimitCoords.data(), GL_DYNAMIC_DRAW);
-    qDebug() << " → Updated meshLimitCoordsBO";
 
+    qDebug() << " → Updated meshLimitCoordsBO";
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, meshLimitNormalsBO);
     gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexLimitNormals.size(), vertexLimitNormals.data(), GL_DYNAMIC_DRAW);
@@ -178,10 +173,12 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
     gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshIndexBO);
     gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*polyIndices.size(), polyIndices.data(), GL_DYNAMIC_DRAW);
 
+    qDebug() << " → Updated meshIndexBO";
+
     gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tessIndexBO);
     gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*tessPatchIndices.size(), tessPatchIndices.data(), GL_DYNAMIC_DRAW);
 
-    qDebug() << " → Updated meshIndexBO";
+    qDebug() << " → Updated tessIndexBO";
 
     patchCount = tessPatchIndices.size();
     meshIBOSize = polyIndices.size();
@@ -207,12 +204,21 @@ void MeshRenderer::draw() {
         updateUniforms();
         settings->uniformUpdateRequired = false;
     }
-    if (settings->tesselation) {
-        tesselatedDraw();
-    } else {
-        regularDraw();
-    }
 
+    switch (settings->renderingMode) {
+        case 0:
+            regularDraw();
+        break;
+        case 1:
+            limitDraw();
+        break;
+        case 2:
+            tesselatedDraw(tesselationRegularVao);
+        break;
+        case 3:
+            tesselatedDraw(tesselationLimitVao);
+        break;
+    }
 }
 
 void MeshRenderer::regularDraw() {
@@ -224,46 +230,23 @@ void MeshRenderer::regularDraw() {
 
     shaderProg.setUniformValue("materialColour", 0.53, 0.80, 0.87);
 
-    if(settings->limitVertices) {
-        // Draw limit surface.
-        shaderProg.setUniformValue("materialColour", 0.5, 0.5, 0.5);
-        shaderProg.setUniformValue("approxFlatShading", settings->approxFlatShadeLimitSurface);
-        if(settings->limitFilledTriangles) {
-            gl->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
-            gl->glBindVertexArray(limitVao);
-            gl->glDrawElements(GL_TRIANGLE_FAN, meshIBOSize, GL_UNSIGNED_INT, 0);
-            gl->glBindVertexArray(0);
-        } else {
-            shaderProg.setUniformValue("approxFlatShading", false);
-            gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
-            gl->glBindVertexArray(limitVao);
-            gl->glDrawElements(GL_LINE_LOOP, meshIBOSize, GL_UNSIGNED_INT, 0);
-            gl->glBindVertexArray(0);
-        }
+    gl->glBindVertexArray(vao);
 
-        // Draw regular variant
-        shaderProg.setUniformValue("materialColour", 0.0, 0.0, 1.0);
+    if (settings->wireframeMode) {
         shaderProg.setUniformValue("approxFlatShading", false);
-        gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
-        gl->glBindVertexArray(vao);
+        shaderProg.setUniformValue("disableLighting", true);
+
+        gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
         gl->glDrawElements(GL_LINE_LOOP, meshIBOSize, GL_UNSIGNED_INT, 0);
-        gl->glBindVertexArray(0);
     } else {
-        shaderProg.setUniformValue("materialColour", 0.53, 0.80, 0.87);
-        gl->glBindVertexArray(vao);
+        shaderProg.setUniformValue("approxFlatShading", settings->approxFlatShading);
+        shaderProg.setUniformValue("disableLighting", false);
 
-        if (settings->wireframeMode) {
-            shaderProg.setUniformValue("approxFlatShading", false);
-            gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-            gl->glDrawElements(GL_LINE_LOOP, meshIBOSize, GL_UNSIGNED_INT, 0);
-        } else {
-            shaderProg.setUniformValue("approxFlatShading", settings->approxFlatShadeSurface);
-            gl->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-            gl->glDrawElements(GL_TRIANGLE_FAN, meshIBOSize, GL_UNSIGNED_INT, 0);
-        }
-
-        gl->glBindVertexArray(0);
+        gl->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+        gl->glDrawElements(GL_TRIANGLE_FAN, meshIBOSize, GL_UNSIGNED_INT, 0);
     }
+
+    gl->glBindVertexArray(0);
 
     shaderProg.release();
 
@@ -271,20 +254,64 @@ void MeshRenderer::regularDraw() {
     gl->glDisable(GL_PRIMITIVE_RESTART);
 }
 
-void MeshRenderer::tesselatedDraw() {
-    QOpenGLShaderProgram& shaderProgram = tessShaderProg;
+void MeshRenderer::limitDraw() {
+    shaderProg.bind();
+    //enable primitive restart
+    gl->glEnable(GL_PRIMITIVE_RESTART);
+    gl->glPrimitiveRestartIndex(INT_MAX);
 
-    shaderProgram.bind();
-    shaderProgram.setUniformValue("materialColour", 1.0, 1.0, 1.0);
 
+    // Draw limit surface.
+    shaderProg.setUniformValue("materialColour", 0.5, 0.5, 0.5);
+
+    // Check wireframe mode.
+    if(settings->wireframeMode) {
+        shaderProg.setUniformValue("approxFlatShading", false);
+        shaderProg.setUniformValue("disableLighting", true);
+
+        gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+        gl->glBindVertexArray(limitVao);
+        gl->glDrawElements(GL_LINE_LOOP, meshIBOSize, GL_UNSIGNED_INT, 0);
+        gl->glBindVertexArray(0);
+    } else {
+        shaderProg.setUniformValue("disableLighting", false);
+        shaderProg.setUniformValue("approxFlatShading", settings->approxFlatShading);
+        gl->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
+        gl->glBindVertexArray(limitVao);
+        gl->glDrawElements(GL_TRIANGLE_FAN, meshIBOSize, GL_UNSIGNED_INT, 0);
+        gl->glBindVertexArray(0);
+    }
+
+    // Draw regular variant
+    shaderProg.setUniformValue("materialColour", 0.0, 0.0, 1.0);
+    shaderProg.setUniformValue("approxFlatShading", false);
+    shaderProg.setUniformValue("disableLighting", true);
+    gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+    gl->glBindVertexArray(vao);
+    gl->glDrawElements(GL_LINE_LOOP, meshIBOSize, GL_UNSIGNED_INT, 0);
+    gl->glBindVertexArray(0);
+
+    shaderProg.release();
+
+    //disable it again as you might want to draw something else at some point
+    gl->glDisable(GL_PRIMITIVE_RESTART);
+}
+
+
+void MeshRenderer::tesselatedDraw(GLuint tessVao) {
+
+    tessShaderProg.bind();
+    tessShaderProg.setUniformValue("materialColour", 1.0, 1.0, 1.0);
 
     if (settings->wireframeMode) {
         gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+        tessShaderProg.setUniformValue("approxFlatShading", false);
+        tessShaderProg.setUniformValue("disableLighting", true);
     } else {
         gl->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
+        tessShaderProg.setUniformValue("approxFlatShading", settings->approxFlatShading);
+        tessShaderProg.setUniformValue("disableLighting", false);
     }
-
-    shaderProgram.setUniformValue("approxFlatShading", false);
 
     tessShaderProg.setUniformValue("tessInner0", settings->tessLevelInner0);
     tessShaderProg.setUniformValue("tessInner1", settings->tessLevelInner1);
@@ -293,15 +320,33 @@ void MeshRenderer::tesselatedDraw() {
     tessShaderProg.setUniformValue("tessOuter2", settings->tessLevelOuter2);
     tessShaderProg.setUniformValue("tessOuter3", settings->tessLevelOuter3);
 
-    gl->glBindVertexArray(tesselationVao);
-
-    shaderProgram.setUniformValue("disableLighting", true);
-
+    gl->glBindVertexArray(tessVao);
     gl->glPatchParameteri(GL_PATCH_VERTICES, 16);
-
     gl->glDrawElements(GL_PATCHES, patchCount, GL_UNSIGNED_INT, 0);
-    std::cout << glGetError() << std::endl;
 
     gl->glBindVertexArray(0);
-    shaderProgram.release();
+    tessShaderProg.release();
+
+
+    if (settings->showNonTesselatedWireframe) {
+
+        shaderProg.bind();
+        //enable primitive restart
+        gl->glEnable(GL_PRIMITIVE_RESTART);
+        gl->glPrimitiveRestartIndex(INT_MAX);
+
+        // Draw regular variant
+        shaderProg.setUniformValue("materialColour", 0.0, 0.0, 1.0);
+        shaderProg.setUniformValue("approxFlatShading", false);
+        shaderProg.setUniformValue("disableLighting", true);
+        gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+        gl->glBindVertexArray(vao);
+        gl->glDrawElements(GL_LINE_LOOP, meshIBOSize, GL_UNSIGNED_INT, 0);
+        gl->glBindVertexArray(0);
+
+        shaderProg.release();
+
+        //disable it again as you might want to draw something else at some point
+        gl->glDisable(GL_PRIMITIVE_RESTART);
+    }
 }

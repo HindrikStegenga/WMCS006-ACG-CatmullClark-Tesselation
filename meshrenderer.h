@@ -22,12 +22,12 @@ public:
     void updateBuffers(Mesh& m);
     void draw();
 
-
     void regularDraw();
-    void tesselatedDraw();
+    void limitDraw();
+    void tesselatedDraw(GLuint tessVao);
 private:
 
-    GLuint vao, limitVao, tesselationVao;
+    GLuint vao, limitVao, tesselationRegularVao, tesselationLimitVao;
     GLuint meshCoordsBO, meshNormalsBO, meshIndexBO,
            meshLimitCoordsBO, meshLimitNormalsBO, tessIndexBO;
     unsigned int meshIBOSize;

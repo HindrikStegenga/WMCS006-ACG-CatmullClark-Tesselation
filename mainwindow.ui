@@ -63,7 +63,7 @@ QGroupBox::title {
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>260</y>
+         <y>180</y>
          <width>181</width>
          <height>29</height>
         </rect>
@@ -86,7 +86,7 @@ QGroupBox::title {
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>230</y>
+         <y>150</y>
          <width>181</width>
          <height>20</height>
         </rect>
@@ -95,174 +95,269 @@ QGroupBox::title {
         <string>Catmull-Clark steps</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="limitVertices">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>300</y>
-         <width>181</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Project vertices at limit</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="fillLimitSurface">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>330</y>
-         <width>181</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Fill limit surface triangles</string>
-       </property>
-      </widget>
       <widget class="QCheckBox" name="approxShadeSurface">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>160</y>
-         <width>181</width>
+         <y>220</y>
+         <width>191</width>
          <height>22</height>
         </rect>
        </property>
        <property name="text">
-        <string>Approx flat shade surface</string>
+        <string>Enable approx flat shading</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="approxShadeLimitSurface">
+      <widget class="QLabel" name="label">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>80</y>
+         <width>171</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Rendering mode:</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>100</y>
+         <width>181</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Regular</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Limit surface</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Tesselation (regular surface)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Tesselation (limit surface)</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QGroupBox" name="groupBox">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>360</y>
-         <width>191</width>
-         <height>22</height>
+         <y>260</y>
+         <width>201</width>
+         <height>481</height>
         </rect>
        </property>
-       <property name="text">
-        <string>Approx flat shade limit surf</string>
+       <property name="title">
+        <string>Tesselation Options</string>
        </property>
-      </widget>
-      <widget class="QCheckBox" name="enableTesselation">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>430</y>
-         <width>191</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Tesselation</string>
-       </property>
-      </widget>
-      <widget class="QSpinBox" name="tessInner1">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>490</y>
-         <width>71</width>
-         <height>29</height>
-        </rect>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-      </widget>
-      <widget class="QSpinBox" name="tessInner2">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>490</y>
-         <width>71</width>
-         <height>29</height>
-        </rect>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-      </widget>
-      <widget class="QLabel" name="StepsLabel_2">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>460</y>
-         <width>181</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Inner tesselation</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="StepsLabel_3">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>530</y>
-         <width>181</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Outer tesselation</string>
-       </property>
-      </widget>
-      <widget class="QSpinBox" name="tessOuter1">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>560</y>
-         <width>181</width>
-         <height>29</height>
-        </rect>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-      </widget>
-      <widget class="QSpinBox" name="tessOuter2">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>590</y>
-         <width>181</width>
-         <height>29</height>
-        </rect>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-      </widget>
-      <widget class="QSpinBox" name="tessOuter3">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>620</y>
-         <width>181</width>
-         <height>29</height>
-        </rect>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-      </widget>
-      <widget class="QSpinBox" name="tessOuter4">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>650</y>
-         <width>181</width>
-         <height>29</height>
-        </rect>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
+       <widget class="QCheckBox" name="nonTesselatedWireframe">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>181</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Non-tesselated wireframe</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>70</y>
+          <width>181</width>
+          <height>91</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Inner segments per patch</string>
+        </property>
+        <widget class="QSpinBox" name="tessInner2">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>50</y>
+           <width>51</width>
+           <height>29</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="tessInner1">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>20</y>
+           <width>51</width>
+           <height>29</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>60</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Vertical       (v)</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_4">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Horizontal  (u)</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>180</y>
+          <width>181</width>
+          <height>161</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Outer segments per patch</string>
+        </property>
+        <widget class="QSpinBox" name="tessOuter1">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>30</y>
+           <width>51</width>
+           <height>29</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="tessOuter2">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>60</y>
+           <width>51</width>
+           <height>29</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="tessOuter3">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>90</y>
+           <width>51</width>
+           <height>29</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="tessOuter4">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>120</y>
+           <width>51</width>
+           <height>29</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_5">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>40</y>
+           <width>91</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Left</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_6">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>70</y>
+           <width>91</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Bottom</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_7">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>100</y>
+           <width>91</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Right</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_8">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>130</y>
+           <width>91</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Top</string>
+         </property>
+        </widget>
+       </widget>
       </widget>
      </widget>
     </item>

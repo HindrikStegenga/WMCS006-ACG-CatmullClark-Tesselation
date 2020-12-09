@@ -409,20 +409,6 @@ void Mesh::computeLimitMesh(Mesh &mesh) {
     mesh.extractAttributes();
 }
 
-bool hasIrregularVertices(Face& face) {
-    if (face.val != 4) {
-        return true;
-    }
-    HalfEdge* currentSide = face.side;
-    while(currentSide->next != face.side) {
-        if (currentSide->target->val != 4) {
-            return true;
-        }
-        currentSide = currentSide->next;
-    }
-    return false;
-}
-
 QuadPatch extractQuadPatch(Face& face) {
     // Get bottom coordinate, putting 1,1 -> 2,1 as face.side. (index 5 -> 6, and 9 -> 10)
     QuadPatch patch;
@@ -488,54 +474,38 @@ QuadPatch extractQuadPatch(Face& face) {
     return patch;
 }
 
-bool isIrregularFace(Face& face, Mesh &mesh) {
-    if (hasIrregularVertices(face)) {
-        return true;
+bool isRegularFace(Face& face) {
+    if (face.val != 4) {
+        return false;
     }
-
     HalfEdge* currentSide = face.side;
 
-    while (currentSide->next != face.side) {
-        if (currentSide->twin->polygon == nullptr ||
-                hasIrregularVertices(*currentSide->twin->polygon)) {
-            return true;
-        }
+    do {
+        if (currentSide->twin->polygon == nullptr || currentSide->twin->polygon->val != 4)
+            return false;
+        if (currentSide->twin->next->twin->polygon == nullptr || currentSide->twin->next->twin->polygon->val != 4)
+            return false;
+        if (currentSide->target->val != 4)
+            return false;
         currentSide = currentSide->next;
-    }
+    } while (face.side != currentSide);
 
-    QuadPatch testPatch = extractQuadPatch(face);
-    for (size_t i = 0; i < testPatch.vertIndices.size(); ++i) {
-
-//        if (mesh.getVertices()[testPatch.vertIndices[i]].val != 4) {
-//            return true;
-//        }
-
-        for(size_t j = 0; j < testPatch.vertIndices.size(); ++j) {
-            if (i == j)
-                continue;
-            // All vertices must be unique!
-            if (testPatch.vertIndices[i] == testPatch.vertIndices[j])
-                return true;
-        }
-    }
-
-    return false;
+    return true;
 }
-
-
 
 
 void Mesh::computeQuadPatches(Mesh &mesh) {
 
     mesh.tessPatches.clear();
     mesh.tessPatches.reserve(mesh.faces.size());
+
     for(int k = 0; k < mesh.faces.size(); ++k) {
         auto face = mesh.faces[k];
-        if(isIrregularFace(face, mesh))
-            continue;
+        if (isRegularFace(face))
+            mesh.tessPatches.push_back(extractQuadPatch(face));
 
         // Add to set of quad patches.
-        mesh.tessPatches.push_back(extractQuadPatch(face));
+
     }
 }
 

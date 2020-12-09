@@ -2,6 +2,8 @@
 
 Settings::Settings()
 {
+    renderingMode = 0;
+
     tessLevelInner0 = 0;
     tessLevelInner1 = 0;
 
@@ -10,13 +12,9 @@ Settings::Settings()
     tessLevelOuter2 = 1;
     tessLevelOuter3 = 1;
 
-    tesselation = false;
-    limitVertices = false;
     modelLoaded = false;
     wireframeMode = true;
-    approxFlatShadeLimitSurface = false;
-    approxFlatShadeSurface = false;
-    limitFilledTriangles = false;
+    approxFlatShading = false;
     uniformUpdateRequired = true;
     lastSubdivLevel = 0;
 
