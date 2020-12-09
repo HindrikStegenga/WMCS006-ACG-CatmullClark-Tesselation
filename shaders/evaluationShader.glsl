@@ -86,25 +86,31 @@ void main() {
     float u = gl_TessCoord.x;
     float v = gl_TessCoord.y;
 
-    // use basis functions to compute position of the vertex.
+    // use basis functions to compute position of the vertex using tensor product.
     gl_Position = b0(u) * ( b0(v) * p00 + b1(v) * p01 + b2(v) * p02 + b3(v) * p03 )
                 + b1(u) * ( b0(v) * p10 + b1(v) * p11 + b2(v) * p12 + b3(v) * p13 )
                 + b2(u) * ( b0(v) * p20 + b1(v) * p21 + b2(v) * p22 + b3(v) * p23 )
                 + b3(u) * ( b0(v) * p30 + b1(v) * p31 + b2(v) * p32 + b3(v) * p33 );
 
+    // Apply projectionmatrix and modelviewmatrix
     gl_Position = projectionmatrix * modelviewmatrix * gl_Position;
 
+
+    // Repeat this process for vertcoords_camera_fs
     vertcoords_camera_fs = b0(u) * ( b0(v) * pc00 + b1(v) * pc01 + b2(v) * pc02 + b3(v) * pc03 )
                          + b1(u) * ( b0(v) * pc10 + b1(v) * pc11 + b2(v) * pc12 + b3(v) * pc13 )
                          + b2(u) * ( b0(v) * pc20 + b1(v) * pc21 + b2(v) * pc22 + b3(v) * pc23 )
                          + b3(u) * ( b0(v) * pc30 + b1(v) * pc31 + b2(v) * pc32 + b3(v) * pc33 );
 
+    // Apply model view matrix
     vertcoords_camera_fs = vec3(modelviewmatrix * vec4(vertcoords_camera_fs, 1.0));
 
+    // Repeat the aforementioned process for vertnormal_camera_fs
     vertnormal_camera_fs = b0(u) * ( b0(v) * pn00 + b1(v) * pn01 + b2(v) * pn02 + b3(v) * pn03 )
                               + b1(u) * ( b0(v) * pn10 + b1(v) * pn11 + b2(v) * pn12 + b3(v) * pn13 )
                               + b2(u) * ( b0(v) * pn20 + b1(v) * pn21 + b2(v) * pn22 + b3(v) * pn23 )
                               + b3(u) * ( b0(v) * pn30 + b1(v) * pn31 + b2(v) * pn32 + b3(v) * pn33 );
 
+    // And apply the normalization and normalmatrix multiply.
     vertnormal_camera_fs = normalize(normalmatrix * vertnormal_camera_fs);
 }
