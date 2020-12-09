@@ -6,10 +6,16 @@ layout (location = 1) in vec3 vertnormal_camera_fs;
 
 uniform vec3 materialColour;
 uniform bool approxFlatShading;
+uniform bool disableLighting;
 
 out vec4 fColor;
 
 void main() {
+
+  if(disableLighting) {
+      fColor = vec4(materialColour, 1);
+      return;
+  }
 
   vec3 lightpos = vec3(3.0, 0.0, 2.0);
   vec3 lightcolour = vec3(1.0);

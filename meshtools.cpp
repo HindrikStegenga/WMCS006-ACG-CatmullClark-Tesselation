@@ -431,31 +431,57 @@ bool isIrregularFace(Face& face) {
 QuadPatch extractQuadPatch(Face& face) {
     // Get bottom coordinate, putting 1,1 -> 2,1 as face.side. (index 5 -> 6, and 9 -> 10)
     QuadPatch patch;
-    HalfEdge* startEdge = face.side;
-    HalfEdge* bottomLeft = startEdge->twin->next->twin->prev->twin->next;
-    HalfEdge* firstRow = bottomLeft->prev->twin->prev;
-    HalfEdge* secondRow = firstRow->prev->twin->prev;
+
+    // F marks the face. s marks the side edge of F.
+    //  p12 - p13 - p14 - p15
+    //  |     |     |     |
+    //  p8 -  p9 - p10 - p11
+    //  |     |  F  |     |
+    //  p4 -  p5 s  p6 - p7
+    //  |     |     |     |
+    // p0  -  p1 -  p2 - p3
+
+    auto p5p6 = face.side;
+    auto p6p10 = face.side->next;
+    auto p10p9 = face.side->next->next;
+    auto p9p5 = face.side->prev;
+
+    auto p1 = p5p6->twin->next->target->index;
+    auto p2 = p5p6->twin->prev->twin->target->index;
+
+    auto p13 = p10p9->twin->prev->twin->target->index;
+    auto p14 = p10p9->twin->next->target->index;
+
+    auto p11 = p6p10->twin->prev->twin->target->index;
+    auto p7  = p6p10->twin->next->target->index;
+
+    auto p8  = p9p5->twin->next->target->index;
+    auto p4  = p9p5->twin->prev->twin->target->index;
+
+    auto p0 = p5p6->twin->next->twin->prev->prev->target->index;
+    auto p3 = p5p6->twin->prev->twin->next->target->index;
+
+    auto p12 = p10p9->twin->prev->twin->next->target->index;
+    auto p15 = p10p9->twin->next->prev->prev->target->index;
+
+    // Bottom left vertex of face
+    auto p5 = face.side->twin->target->index;
+
+    // Bottom right vertex of face
+    auto p6 = face.side->target->index;
+
+    // Top left vertex of face
+    auto p9 = face.side->prev->twin->target->index;
+
+    // Top right vertex of face
+    auto p10 = face.side->next->target->index;
 
     patch.vertIndices = {
-        bottomLeft->target->index,
-        bottomLeft->next->target->index,
-        bottomLeft->next->next->twin->next->target->index,
-        bottomLeft->next->next->twin->next->next->twin->next->target->index,
+        p0, p1, p2, p3,
+        p4, p5, p6, p7,
 
-        firstRow->target->index,
-        firstRow->next->target->index,
-        firstRow->next->next->twin->next->target->index,
-        firstRow->next->next->twin->next->next->twin->next->target->index,
-
-        secondRow->target->index,
-        secondRow->next->target->index,
-        secondRow->next->next->twin->next->target->index,
-        secondRow->next->next->twin->next->next->twin->next->target->index,
-
-        secondRow->prev->target->index,
-        secondRow->prev->prev->twin->prev->target->index,
-        secondRow->prev->prev->twin->prev->prev->twin->prev->target->index,
-        secondRow->prev->prev->twin->prev->prev->twin->prev->twin->target->index,
+        p8,  p9,  p10, p11,
+        p12, p13, p14, p15,
     };
 
     return patch;
@@ -464,11 +490,11 @@ QuadPatch extractQuadPatch(Face& face) {
 void Mesh::computeQuadPatches(Mesh &mesh) {
 
     mesh.tessPatches.clear();
-    mesh.tessPatches.reserve(mesh.vertices.size() * 16);
+    mesh.tessPatches.reserve(mesh.faces.size());
     for(int k = 0; k < mesh.faces.size(); ++k) {
         auto face = mesh.faces[k];
-        if(isIrregularFace(face))
-            continue;
+        //if(isIrregularFace(face))
+            //continue;
 
         // Add to set of quad patches.
         mesh.tessPatches.push_back(extractQuadPatch(face));

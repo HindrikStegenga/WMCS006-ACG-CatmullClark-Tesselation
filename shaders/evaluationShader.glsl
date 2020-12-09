@@ -20,7 +20,6 @@ float b0(float t) {
 
 float b1(float t) {
     return (4.0 - 6.0 * t * t + 3.0 * t * t * t) / 6.0;
-
 }
 
 float b2(float t) {
@@ -30,8 +29,6 @@ float b2(float t) {
 float b3(float t) {
     return (t * t * t) / 6.0;
 }
-
-
 
 void main() {
 

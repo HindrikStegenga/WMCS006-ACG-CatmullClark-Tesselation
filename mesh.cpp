@@ -16,7 +16,7 @@ Mesh::Mesh(OBJFile* loadedOBJFile) {
     numVertices = loadedOBJFile->vertexCoords.size();
     numHalfEdges = 0;
 
-    for (k=0; k<loadedOBJFile->faceValences.size(); k++) {
+    for (k=0; k < static_cast<unsigned int>(loadedOBJFile->faceValences.size()); k++) {
         numHalfEdges += loadedOBJFile->faceValences[k];
     }
 
@@ -135,11 +135,6 @@ void Mesh::extractAttributes() {
     vertexCoords.reserve(vertices.size());
     limitCoords.reserve(vertices.size());
 
-    tessCoords.clear();
-    tessCoords.reserve(tessPatches.size() * 16);
-    tessNormals.clear();
-    tessNormals.reserve(tessPatches.size() * 16);
-
     for (int k = 0; k < vertices.size(); k++) {
         vertexCoords.append(vertices[k].coords);
     }
@@ -162,10 +157,12 @@ void Mesh::extractAttributes() {
         limitNormals.append( computeLimitNormal(&vertices[k]) );
     }
 
+    tessPatchIndices.clear();
+    tessPatchIndices.reserve(vertices.size() * 16);
+
     for (int k = 0; k < tessPatches.size(); ++k) {
         for (int c = 0; c < 16; ++c) {
-            tessCoords.push_back(vertexCoords[tessPatches[k].vertIndices[c]]);
-            tessNormals.push_back(vertexNormals[tessPatches[k].vertIndices[c]]);
+            tessPatchIndices.push_back(tessPatches[k].vertIndices[c]);
         }
     }
 

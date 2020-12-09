@@ -14,8 +14,7 @@ MeshRenderer::~MeshRenderer() {
     gl->glDeleteBuffers(1, &meshLimitCoordsBO);
     gl->glDeleteBuffers(1, &meshLimitNormalsBO);
 
-    gl->glDeleteBuffers(1, &tessCoordsBO);
-    gl->glDeleteBuffers(1, &tessNormalsBO);
+    gl->glDeleteBuffers(1, &tessIndexBO);
 
     gl->glDeleteBuffers(1, &meshCoordsBO);
     gl->glDeleteBuffers(1, &meshNormalsBO);
@@ -98,15 +97,18 @@ void MeshRenderer::initBuffers() {
     gl->glGenVertexArrays(1, &tesselationVao);
     gl->glBindVertexArray(tesselationVao);
 
-    gl->glGenBuffers(1, &tessCoordsBO);
-    gl->glBindBuffer(GL_ARRAY_BUFFER, tessCoordsBO);
+    // We can reuse buffers from limit meshes for tesselation.
+    gl->glBindBuffer(GL_ARRAY_BUFFER, meshLimitCoordsBO);
     gl->glEnableVertexAttribArray(0);
     gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    gl->glGenBuffers(1, &tessNormalsBO);
-    gl->glBindBuffer(GL_ARRAY_BUFFER, tessNormalsBO);
+    gl->glBindBuffer(GL_ARRAY_BUFFER, meshLimitNormalsBO);
     gl->glEnableVertexAttribArray(1);
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // We do need a new index buffer however.
+    gl->glGenBuffers(1, &tessIndexBO);
+    gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tessIndexBO);
 
     gl->glBindVertexArray(0);
 
@@ -144,14 +146,11 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
     QVector<QVector3D>& vertexCoords = currentMesh.getVertexCoords();
     QVector<QVector3D>& vertexNormals = currentMesh.getVertexNorms();
     QVector<unsigned int>& polyIndices = currentMesh.getPolyIndices();
+
     QVector<QVector3D>& vertexLimitCoords = currentMesh.getLimitCoords();
     QVector<QVector3D>& vertexLimitNormals = currentMesh.getLimitNorms();
 
-    auto test = createPlanarMesh(false);
-    auto test2 = createPlanarMesh(true);
-
-    QVector<QVector3D>& tessVertCoords = test; //currentMesh.getTessVertexCoords();
-    QVector<QVector3D>& tessVertNorms = test2; //currentMesh.getTessVertexNorms();
+    QVector<unsigned int>& tessPatchIndices = currentMesh.getTessPatchIndices();
 
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
@@ -176,22 +175,15 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
 
     qDebug() << " → Updated meshLimitNormalsBO";
 
-    gl->glBindBuffer(GL_ARRAY_BUFFER, tessCoordsBO);
-    gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*tessVertCoords.size(), tessVertCoords.data(), GL_DYNAMIC_DRAW);
-    qDebug() << " → Updated tesselation coords.";
-
-    gl->glBindBuffer(GL_ARRAY_BUFFER, tessNormalsBO);
-    gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*tessVertNorms.size(), tessVertNorms.data(), GL_DYNAMIC_DRAW);
-
-    qDebug() << " → Updated meshLimitNormalsBO";
-
-
     gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshIndexBO);
     gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*polyIndices.size(), polyIndices.data(), GL_DYNAMIC_DRAW);
 
+    gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tessIndexBO);
+    gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*tessPatchIndices.size(), tessPatchIndices.data(), GL_DYNAMIC_DRAW);
+
     qDebug() << " → Updated meshIndexBO";
 
-    patchCount = currentMesh.patchCount();
+    patchCount = tessPatchIndices.size();
     meshIBOSize = polyIndices.size();
 }
 
@@ -288,7 +280,15 @@ void MeshRenderer::tesselatedDraw() {
     QOpenGLShaderProgram& shaderProgram = tessShaderProg;
 
     shaderProgram.bind();
-    shaderProgram.setUniformValue("materialColour", 1.0, 0.0, 0.0);
+    shaderProgram.setUniformValue("materialColour", 1.0, 1.0, 1.0);
+
+
+    if (settings->wireframeMode) {
+        gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+    } else {
+        gl->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
+    }
+
     shaderProgram.setUniformValue("approxFlatShading", false);
 
     tessShaderProg.setUniformValue("tessInner0", settings->tessLevelInner0);
@@ -299,12 +299,12 @@ void MeshRenderer::tesselatedDraw() {
     tessShaderProg.setUniformValue("tessOuter3", settings->tessLevelOuter3);
 
     gl->glBindVertexArray(tesselationVao);
-    std::cout << glGetError() << std::endl;
-    gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
-    std::cout << glGetError() << std::endl;
+
+    shaderProgram.setUniformValue("disableLighting", true);
+
     gl->glPatchParameteri(GL_PATCH_VERTICES, 16);
-    std::cout << glGetError() << std::endl;
-    gl->glDrawArrays(GL_PATCHES, 0, 16);
+
+    gl->glDrawElements(GL_PATCHES, patchCount, GL_UNSIGNED_INT, 0);
     std::cout << glGetError() << std::endl;
 
     gl->glBindVertexArray(0);

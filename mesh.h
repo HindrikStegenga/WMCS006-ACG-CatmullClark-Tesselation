@@ -25,11 +25,10 @@ public:
 
     inline QVector<QVector3D>& getLimitCoords() { return limitCoords; }
     inline QVector<QVector3D>& getVertexCoords() { return vertexCoords; }
-    inline QVector<QVector3D>& getTessVertexCoords() { return tessCoords; }
-    inline QVector<QVector3D>& getTessVertexNorms() { return tessNormals; }
     inline QVector<QVector3D>& getVertexNorms() { return vertexNormals; }
     inline QVector<QVector3D>& getLimitNorms() { return limitNormals; }
     inline QVector<unsigned int>& getPolyIndices() { return polyIndices; }
+    inline QVector<unsigned int>& getTessPatchIndices() { return tessPatchIndices; }
 
     void setTwins(unsigned int numHalfEdges, unsigned int indexH, QVector<QVector<unsigned int>>& potentialTwins);
 
@@ -40,8 +39,6 @@ public:
     void subdivideLoop(Mesh& mesh);
 
     void extractAttributes();
-
-    //QVector<QVector<unsigned int> > PotentialTwins;
 
     void setFaceNormal(Face* currentFace);
     QVector3D computeVertexNormal(Vertex* currentVertex);
@@ -71,9 +68,7 @@ private:
     QVector<unsigned int> polyIndices;
 
     QVector<QuadPatch> tessPatches;
-    QVector<QVector3D> tessCoords;
-    QVector<QVector3D> tessNormals;
-
+    QVector<unsigned int> tessPatchIndices;
 };
 
 #endif // MESH_H
