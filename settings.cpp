@@ -12,6 +12,7 @@ Settings::Settings()
     tessLevelOuter2 = 1;
     tessLevelOuter3 = 1;
 
+    analyticalNormals = false;
     modelLoaded = false;
     wireframeMode = true;
     approxFlatShading = false;

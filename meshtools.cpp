@@ -1,4 +1,5 @@
 #include "mesh.h"
+#include <cstdlib>
 
 HalfEdge* vertOnBoundary(Vertex* currentVertex) {
 
@@ -329,6 +330,7 @@ QVector3D computeHalfEdgeMidpoint(HalfEdge* edge) {
     return (target->coords + prevTarget->coords) / 2.0;
 }
 
+// Computes the midpoint of a face.
 QVector3D computeFaceMidpoint(Face* face) {
     HalfEdge* initialSide = face->side;
     QVector3D coords = QVector3D();
@@ -409,26 +411,7 @@ void Mesh::computeLimitMesh(Mesh &mesh) {
     mesh.extractAttributes();
 }
 
-HalfEdge* findBottomFaceSide(Face& face) {
-    unsigned int edgeIdx = UINT_MAX;
-    HalfEdge* bottom = face.side;
-
-    HalfEdge* currentSide = face.side;
-
-    do {
-        if (currentSide->index < edgeIdx) {
-            bottom = currentSide;
-            edgeIdx = currentSide->index;
-        }
-
-        currentSide = currentSide->next;
-    } while (face.side != currentSide);
-
-    return bottom;
-}
-
 QuadPatch extractQuadPatch(Face& face) {
-    // Get bottom coordinate, putting 1,1 -> 2,1 as face.side. (index 5 -> 6, and 9 -> 10)
     QuadPatch patch;
 
     // F marks the face. s marks the side edge of F.
@@ -440,12 +423,12 @@ QuadPatch extractQuadPatch(Face& face) {
     //  |     |     |     |
     // p0  -  p1 -  p2 - p3
 
-    HalfEdge* bottomFace = findBottomFaceSide(face);
+    // NOTE: The orientation of the patch is based on the orientation of the side s.
 
-    auto p5p6 = bottomFace;
-    auto p6p10 = bottomFace->next;
-    auto p10p9 = bottomFace->next->next;
-    auto p9p5 = bottomFace->prev;
+    auto p5p6 = face.side;
+    auto p6p10 = face.side->next;
+    auto p10p9 = face.side->next->next;
+    auto p9p5 = face.side->prev;
 
     // Bottom middle edge points
     auto p1 = p5p6->twin->next->target->index;
@@ -472,16 +455,16 @@ QuadPatch extractQuadPatch(Face& face) {
     auto p15 = p6p10->twin->prev->twin->next->target->index;
 
     // Bottom left vertex of face
-    auto p5 = bottomFace->twin->target->index;
+    auto p5 = face.side->twin->target->index;
 
     // Bottom right vertex of face
-    auto p6 = bottomFace->target->index;
+    auto p6 = face.side->target->index;
 
     // Top left vertex of face
-    auto p9 = bottomFace->prev->twin->target->index;
+    auto p9 = face.side->prev->twin->target->index;
 
     // Top right vertex of face
-    auto p10 = bottomFace->next->target->index;
+    auto p10 = face.side->next->target->index;
 
     patch.vertIndices = {
         p0, p1, p2, p3,
@@ -494,6 +477,8 @@ QuadPatch extractQuadPatch(Face& face) {
     return patch;
 }
 
+// Checks if a face is regular or not.
+// Basically walks the neighbourhood of the current face and checks if the neighbouring ones are quads as well.
 bool isRegularFace(Face& face) {
     if (face.val != 4) {
         return false;
@@ -513,7 +498,7 @@ bool isRegularFace(Face& face) {
     return true;
 }
 
-
+// Grabs all the quad patches for tesselated drawing
 void Mesh::computeQuadPatches(Mesh &mesh) {
 
     mesh.tessPatches.clear();
@@ -523,9 +508,6 @@ void Mesh::computeQuadPatches(Mesh &mesh) {
         auto face = mesh.faces[k];
         if (isRegularFace(face))
             mesh.tessPatches.push_back(extractQuadPatch(face));
-
-        // Add to set of quad patches.
-
     }
 }
 

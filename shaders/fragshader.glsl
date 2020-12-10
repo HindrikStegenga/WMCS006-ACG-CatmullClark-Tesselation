@@ -31,7 +31,7 @@ void main() {
   normal = normalize(vertnormal_camera_fs);
 
   // A small trick to approximate some form of flat shading.
-  // It somewhat approximates the flat surface normal but only on the current triangle.
+  // It somewhat approximates the flat (non interpolated) surface normal but only on the current triangle.
   // Helps for visibility
   if (approxFlatShading) {
       vec3 xTangent = dFdx(vertcoords_camera_fs);

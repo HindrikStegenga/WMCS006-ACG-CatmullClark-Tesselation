@@ -14,6 +14,7 @@ public:
     bool approxFlatShading;
     int lastSubdivLevel;
     bool showNonTesselatedWireframe;
+    bool analyticalNormals;
 
     int tessLevelInner0, tessLevelInner1, tessLevelOuter0, tessLevelOuter1, tessLevelOuter2, tessLevelOuter3;
 

@@ -44,6 +44,8 @@ private slots:
 
   void on_nonTesselatedWireframe_toggled(bool checked);
 
+  void on_analyticalNormalsCheckbox_toggled(bool checked);
+
 private:
   Ui::MainWindow *ui;
 };

@@ -301,17 +301,21 @@ void MeshRenderer::limitDraw() {
 void MeshRenderer::tesselatedDraw(GLuint tessVao) {
 
     tessShaderProg.bind();
-    tessShaderProg.setUniformValue("materialColour", 1.0, 1.0, 1.0);
+    tessShaderProg.setUniformValue("materialColour", 0.5, 0.5, 0.5);
 
     if (settings->wireframeMode) {
         gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
         tessShaderProg.setUniformValue("approxFlatShading", false);
         tessShaderProg.setUniformValue("disableLighting", true);
+        tessShaderProg.setUniformValue("analyticalNormals", false);
     } else {
         gl->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
         tessShaderProg.setUniformValue("approxFlatShading", settings->approxFlatShading);
+        tessShaderProg.setUniformValue("analyticalNormals", settings->analyticalNormals);
         tessShaderProg.setUniformValue("disableLighting", false);
     }
+
+    // Set all the tesselation levels.
 
     tessShaderProg.setUniformValue("tessInner0", settings->tessLevelInner0);
     tessShaderProg.setUniformValue("tessInner1", settings->tessLevelInner1);
@@ -319,6 +323,8 @@ void MeshRenderer::tesselatedDraw(GLuint tessVao) {
     tessShaderProg.setUniformValue("tessOuter1", settings->tessLevelOuter1);
     tessShaderProg.setUniformValue("tessOuter2", settings->tessLevelOuter2);
     tessShaderProg.setUniformValue("tessOuter3", settings->tessLevelOuter3);
+
+    // Bind the tesselation vao and 'render' the control patches.
 
     gl->glBindVertexArray(tessVao);
     gl->glPatchParameteri(GL_PATCH_VERTICES, 16);

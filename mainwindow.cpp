@@ -99,6 +99,10 @@ void MainWindow::on_comboBox_currentIndexChanged(int index)
     ui->MainDisplay->settings.renderingMode = index;
     ui->MainDisplay->settings.uniformUpdateRequired = true;
     auto value = ui->MainDisplay->settings.lastSubdivLevel;
+
+    if(value > meshes.size() - 1)
+        return;
+
     ui->MainDisplay->updateBuffers( meshes[value] );
     ui->MainDisplay->update();
 }
@@ -108,6 +112,25 @@ void MainWindow::on_nonTesselatedWireframe_toggled(bool checked)
     ui->MainDisplay->settings.showNonTesselatedWireframe = checked;
     ui->MainDisplay->settings.uniformUpdateRequired = true;
     auto value = ui->MainDisplay->settings.lastSubdivLevel;
+
+    if(value > meshes.size() - 1)
+        return;
+
+    ui->MainDisplay->updateBuffers( meshes[value] );
+    ui->MainDisplay->update();
+}
+
+void MainWindow::on_analyticalNormalsCheckbox_toggled(bool checked)
+{
+    ui->MainDisplay->settings.analyticalNormals = checked;
+
+    ui->MainDisplay->settings.uniformUpdateRequired = true;
+
+    auto value = ui->MainDisplay->settings.lastSubdivLevel;
+
+    if(value > meshes.size() - 1)
+        return;
+
     ui->MainDisplay->updateBuffers( meshes[value] );
     ui->MainDisplay->update();
 }
